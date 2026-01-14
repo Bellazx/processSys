@@ -1,0 +1,57 @@
+services:
+  backend:
+    build:
+      context: ./code/backend
+      dockerfile: Dockerfile
+    container_name: process-sys-backend
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - SQL_SERVER=${SQL_SERVER:-10.119.2.152}
+      - SQL_PORT=${SQL_PORT:-1433}
+      - SQL_DATABASE=${SQL_DATABASE:-staff}
+      - SQL_USERNAME=${SQL_USERNAME:-staff}
+      - SQL_PASSWORD=${SQL_PASSWORD:-Hr9rlZ4y}
+      - FLASK_ENV=production
+      - SERVER_IP=10.119.9.223
+      - SERVER_PORT=80
+      - BACKEND_PORT=8081
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./code/backend/uploads:/app/uploads
+      - ./code/backend/logs:/app/logs
+    networks:
+      - process-sys-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/process/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./code/frontend
+      dockerfile: Dockerfile
+    container_name: process-sys-frontend
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - process-sys-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/libProcess/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  process-sys-network:
+    driver: bridge
+    name: process-sys-network
+
