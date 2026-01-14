@@ -40,6 +40,10 @@ dist-ssr/
 logs/
 *.log
 
+# Flask Session
+flask_session/
+*.session
+
 # Environment variables
 .env
 .env.local
