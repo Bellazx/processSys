@@ -142,7 +142,10 @@ export default {
       this.$router.push(`/work-orders/${id}`)
     },
     approve(id) {
-      this.$router.push(`/dashboard/work-orders/${id}`)
+      this.$router.push({
+        path: `/work-orders/${id}`,
+        query: { filter: 'pending_approvals' }
+      })
     },
     canApprove(row) {
       return this.activeTab === 'pending_approvals' && row.status === 'pending'
